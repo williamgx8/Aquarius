@@ -5,6 +5,7 @@ package com.nepxion.aquarius.example.limit.app2;
  * <p>Description: Nepxion Aquarius</p>
  * <p>Copyright: Copyright (c) 2017-2050</p>
  * <p>Company: Nepxion</p>
+ *
  * @author Haojun Ren
  * @version 1.0
  */
@@ -24,54 +25,54 @@ import com.nepxion.aquarius.limit.annotation.EnableLimit;
 
 @SpringBootApplication
 @EnableLimit
-@ComponentScan(basePackages = { "com.nepxion.aquarius.example.limit.service" })
+@ComponentScan(basePackages = {"com.nepxion.aquarius.example.limit.service"})
 public class LimitApplication {
-    private static final Logger LOG = LoggerFactory.getLogger(LimitApplication.class);
 
-    public static void main(String[] args) throws Exception {
-        ConfigurableApplicationContext applicationContext = SpringApplication.run(LimitApplication.class, args);
+	private static final Logger LOG = LoggerFactory.getLogger(LimitApplication.class);
 
-        // 在给定的10秒里最多访问5次(超出次数返回false)；等下个10秒开始，才允许再次被访问(返回true)，周而复始
-        LimitExecutor limitExecutor = applicationContext.getBean(LimitExecutor.class);
+	public static void main(String[] args) throws Exception {
+		ConfigurableApplicationContext applicationContext = SpringApplication
+			.run(LimitApplication.class, args);
 
-        Timer timer1 = new Timer();
-        timer1.scheduleAtFixedRate(new TimerTask() {
-            public void run() {
-                for (int i = 0; i < 3; i++) {
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                LOG.info("Timer1 - Limit={}", limitExecutor.tryAccess("limit", "X-Y", 10, 5));
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }).start();
-                }
-            }
-        }, 0L, 1000L);
+		// 在给定的10秒里最多访问5次(超出次数返回false)；等下个10秒开始，才允许再次被访问(返回true)，周而复始
+		LimitExecutor limitExecutor = applicationContext.getBean(LimitExecutor.class);
 
-        Timer timer2 = new Timer();
-        timer2.scheduleAtFixedRate(new TimerTask() {
-            public void run() {
-                for (int i = 0; i < 3; i++) {
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                LOG.info("Timer1 - Limit={}", limitExecutor.tryAccess("limit", "X-Y", 10, 5));
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }).start();
-                }
-            }
-        }, 0L, 1500L);
-    }
+		Timer timer1 = new Timer();
+		timer1.scheduleAtFixedRate(new TimerTask() {
+			@Override
+			public void run() {
+				for (int i = 0; i < 3; i++) {
+					new Thread(() -> {
+						try {
+							LOG.info("Timer1 - Limit={}",
+								limitExecutor.tryAccess("limit", "X-Y", 10, 5));
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}).start();
+				}
+			}
+		}, 0L, 1000L);
 
-    // 如下方式，只支持Spring Cloud F版以前的版本
+		Timer timer2 = new Timer();
+		timer2.scheduleAtFixedRate(new TimerTask() {
+			@Override
+			public void run() {
+				for (int i = 0; i < 3; i++) {
+					new Thread(() -> {
+						try {
+							LOG.info("Timer1 - Limit={}",
+								limitExecutor.tryAccess("limit", "X-Y", 10, 5));
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}).start();
+				}
+			}
+		}, 0L, 1500L);
+	}
+
+	// 如下方式，只支持Spring Cloud F版以前的版本
     /*@Bean
     public EmbeddedServletContainerFactory createEmbeddedServletContainerFactory() {
         TomcatEmbeddedServletContainerFactory tomcatFactory = new TomcatEmbeddedServletContainerFactory();
